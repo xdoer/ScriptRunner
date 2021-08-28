@@ -1,7 +1,7 @@
 {
-  "name": "script-runner",
-  "description": "run any script",
-  "version": "0.0.0",
+  "name": "@xdoer/script-runner",
+  "description": "run script",
+  "version": "0.0.1",
   "author": "Thomas Trainset @xdoer",
   "bin": {
     "scr": "./bin/run"
@@ -13,7 +13,7 @@
     "@oclif/plugin-help": "^3",
     "tslib": "^1",
     "require-from-string": "^2.0.2",
-    "typescript": "^3.3"
+    "typescript": "^4.4.2"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1",
@@ -23,6 +23,9 @@
     "eslint-config-oclif": "^3.1",
     "eslint-config-oclif-typescript": "^0.1",
     "ts-node": "^8"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "engines": {
     "node": ">=8.0.0"

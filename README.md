@@ -5,7 +5,7 @@ Parse and run your script.
 ## Install
 
 ```bash
-npm i script-runner -D
+npm i @xdoer/script-runner -D
 ```
 
 ## Usage
