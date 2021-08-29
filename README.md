@@ -26,6 +26,32 @@ module.exports = {
         },
       ],
     },
+    {
+      module: "@prequest/response-types-generator/es6",
+      type: "esm",
+      args: [
+        {
+          data: [
+            {
+              path: "https://cnodejs.org/api/v1/topics",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      module: "@prequest/response-types-generator/src",
+      type: "ts",
+      args: [
+        {
+          data: [
+            {
+              path: "https://cnodejs.org/api/v1/topics",
+            },
+          ],
+        },
+      ],
+    },
   ],
 };
 ```

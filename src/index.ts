@@ -1,8 +1,6 @@
 import { Command, flags } from '@oclif/command'
-import * as requireFromString from 'require-from-string'
 import { resolve, isAbsolute } from 'path'
-import { readFileSync } from 'fs'
-import { transpile } from 'typescript'
+import * as tsNode from 'ts-node'
 import { Config, Script } from './types'
 
 class ScriptRunner extends Command {
@@ -30,22 +28,29 @@ class ScriptRunner extends Command {
 
   runTs(script: Script) {
     const { module, args } = script
-    const modulePath = require.resolve(module)
-    const fileString = readFileSync(modulePath, { encoding: 'utf8' })
-    const jsCodeString = transpile(fileString)
-    requireFromString(jsCodeString).default(...args)
+    tsNode.register({ dir: require.resolve(module), skipProject: true, transpileOnly: true })
+    require(module).default(...args)
+  }
+
+  runEsm(script: Script) {
+    const { module, args } = script
+    tsNode.register({ dir: require.resolve(module), skipProject: true, transpileOnly: true, compilerOptions: { allowJs: true } })
+    require(module).default(...args)
   }
 
   runCjs(script: Script) {
     const { module, args } = script
-    require(module)(...args)
+    const loaded = require(module)
+    typeof loaded.default === 'function' ? loaded.default(...args) : loaded(...args)
   }
 
   runScript(script: Script) {
     switch (script.type) {
       case 'ts':
-      case 'esm':
         this.runTs(script)
+        break
+      case 'esm':
+        this.runEsm(script)
         break
       default:
         this.runCjs(script)
