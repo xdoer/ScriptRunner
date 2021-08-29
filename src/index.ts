@@ -26,13 +26,13 @@ class ScriptRunner extends Command {
     return require(resolve(process.cwd(), filePath))
   }
 
-  runTs(script: Script) {
-    const { module, args } = script
-    tsNode.register({ dir: require.resolve(module), skipProject: true, transpileOnly: true })
-    require(module).default(...args)
-  }
+  // runTs(script: Script) {
+  //   const { module, args } = script
+  //   tsNode.register({ dir: require.resolve(module), skipProject: true, transpileOnly: true })
+  //   require(module).default(...args)
+  // }
 
-  runEsm(script: Script) {
+  runTs(script: Script) {
     const { module, args } = script
     tsNode.register({ dir: require.resolve(module), skipProject: true, transpileOnly: true, compilerOptions: { allowJs: true } })
     require(module).default(...args)
@@ -47,10 +47,10 @@ class ScriptRunner extends Command {
   runScript(script: Script) {
     switch (script.type) {
       case 'ts':
-        this.runTs(script)
-        break
+      // this.runTs(script)
+      // break
       case 'esm':
-        this.runEsm(script)
+        this.runTs(script)
         break
       default:
         this.runCjs(script)
