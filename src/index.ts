@@ -1,5 +1,7 @@
 import { Command, flags } from '@oclif/command'
 import { resolve, isAbsolute } from 'path'
+import { promises } from 'fs'
+import * as fs from 'fs'
 import * as tsNode from 'ts-node'
 import { Config, Script } from './types'
 
@@ -18,12 +20,37 @@ class ScriptRunner extends Command {
     config: flags.string({ char: 'c', description: 'specify the configuration file address' }),
   }
 
-  loadConfig(filePath?: string) {
-    if (!filePath) return require(resolve(process.cwd(), 'scr.config.js'))
+  async parseConfigPath(paths: string[]) {
+    for (const path of paths) {
+      try {
+        await promises.access(path, fs.constants.F_OK)
+        return path
+      } catch { }
+    }
+    throw new Error('scr.config.js is not found')
+  }
 
-    if (isAbsolute(filePath)) return require(filePath)
+  async loadConfig(filePath?: string): Promise<Config> {
+    let configPaths: string[] = []
 
-    return require(resolve(process.cwd(), filePath))
+    if (!filePath) {
+      configPaths = ['js', 'mjs', 'ts'].map(ext => resolve(process.cwd(), `scr.config.${ext}`))
+    } else {
+      if (isAbsolute(filePath)) {
+        configPaths.push(filePath)
+      } else {
+        configPaths.push(resolve(process.cwd(), filePath))
+      }
+    }
+
+    const configPath = await this.parseConfigPath(configPaths)
+    const [, fileExt] = configPath.match(/.+\.(\w+)$/) || []
+
+    if (fileExt !== 'js') {
+      tsNode.register({ dir: configPath, skipProject: true, transpileOnly: true, compilerOptions: { allowJs: true } })
+    }
+
+    return require(configPath)
   }
 
   // runTs(script: Script) {
@@ -35,13 +62,13 @@ class ScriptRunner extends Command {
   runTs(script: Script) {
     const { module, args } = script
     tsNode.register({ dir: require.resolve(module), skipProject: true, transpileOnly: true, compilerOptions: { allowJs: true } })
-    require(module).default(...args)
+    return require(module).default(...args)
   }
 
   runCjs(script: Script) {
     const { module, args } = script
     const loaded = require(module)
-    typeof loaded.default === 'function' ? loaded.default(...args) : loaded(...args)
+    return typeof loaded.default === 'function' ? loaded.default(...args) : loaded(...args)
   }
 
   runScript(script: Script) {
@@ -66,7 +93,7 @@ class ScriptRunner extends Command {
   async run() {
     const { flags } = this.parse(ScriptRunner)
 
-    const config: Config = this.loadConfig(flags.config)
+    const config: Config = await this.loadConfig(flags.config)
     const { scripts = [] } = config || {}
 
     // run a script
