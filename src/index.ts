@@ -27,7 +27,7 @@ class ScriptRunner extends Command {
         return path
       } catch { }
     }
-    throw new Error('scr.config.js is not found')
+    throw new Error('script-runner config file is not found')
   }
 
   async loadConfig(filePath?: string): Promise<Config> {
