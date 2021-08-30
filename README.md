@@ -99,4 +99,4 @@ module.exports = {
 > - `scr -h` 查看帮助
 > - `scr -l` 查看配置的脚本
 > - `scr -r 1` 或者 `scr -r index.js` 执行第一个脚本或者执行 module 为 index.js 的脚本
-> - `scr -c /User/xdoer/a.js` 执行配置文件
+> - `scr -c /User/xdoer/a.js` 指定配置文件
