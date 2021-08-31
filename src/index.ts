@@ -1,7 +1,6 @@
 import { Command, flags } from '@oclif/command'
 import { resolve, isAbsolute } from 'path'
-import { promises } from 'fs'
-import * as fs from 'fs'
+import { promises, constants } from 'fs'
 import * as tsNode from 'ts-node'
 import { Config, Script } from './types'
 
@@ -23,7 +22,7 @@ class ScriptRunner extends Command {
   async parseConfigPath(paths: string[]) {
     for (const path of paths) {
       try {
-        await promises.access(path, fs.constants.F_OK)
+        await promises.access(path, constants.F_OK)
         return path
       } catch { }
     }
@@ -34,7 +33,7 @@ class ScriptRunner extends Command {
     let configPaths: string[] = []
 
     if (!filePath) {
-      configPaths = ['js', 'mjs', 'ts'].map(ext => resolve(process.cwd(), `scr.config.${ext}`))
+      configPaths = ['js', 'ts'].map(ext => resolve(process.cwd(), `scr.config.${ext}`))
     } else {
       if (isAbsolute(filePath)) {
         configPaths.push(filePath)
@@ -44,20 +43,12 @@ class ScriptRunner extends Command {
     }
 
     const configPath = await this.parseConfigPath(configPaths)
-    const [, fileExt] = configPath.match(/.+\.(\w+)$/) || []
 
-    if (fileExt !== 'js') {
-      tsNode.register({ dir: configPath, skipProject: true, transpileOnly: true, compilerOptions: { allowJs: true } })
-    }
+    tsNode.register({ dir: configPath, skipProject: true, transpileOnly: true, compilerOptions: { allowJs: true } })
 
-    return require(configPath)
+    const configModule = require(configPath)
+    return configModule.default ?? configModule
   }
-
-  // runTs(script: Script) {
-  //   const { module, args } = script
-  //   tsNode.register({ dir: require.resolve(module), skipProject: true, transpileOnly: true })
-  //   require(module).default(...args)
-  // }
 
   runTs(script: Script) {
     const { module, args } = script
@@ -74,8 +65,6 @@ class ScriptRunner extends Command {
   runScript(script: Script) {
     switch (script.type) {
       case 'ts':
-      // this.runTs(script)
-      // break
       case 'esm':
         this.runTs(script)
         break
