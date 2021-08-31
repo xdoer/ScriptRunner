@@ -49,6 +49,8 @@ script: {
 
 ScriptRunner 支持直接解析和执行 cjs、esm 和 ts 的脚本代码，配置文件同样支持 cjs，esm 与 ts。[示例请查看:example](example/README.md)
 
+在没有显示指定配置文件的情况下，程序将在项目根目录，查找 `scr.config.[js|ts]` 的配置文件.
+
 ```js
 module.exports = {
   scripts: [
