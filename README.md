@@ -53,6 +53,7 @@ ScriptRunner 支持直接解析和执行 cjs、esm 和 ts 的脚本代码，配�
 
 ```js
 module.exports = {
+  type: "cjs", // scripts 中没有写 type, 会默认用这个
   scripts: [
     {
       module: "@prequest/response-types-generator",

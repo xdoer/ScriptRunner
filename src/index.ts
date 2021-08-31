@@ -73,24 +73,18 @@ class ScriptRunner extends Command {
     }
   }
 
-  runScripts(scripts: Script[] = []) {
-    for (const script of scripts) {
-      this.runScript(script)
-    }
-  }
-
   async run() {
     const { flags } = this.parse(ScriptRunner)
 
     const config: Config = await this.loadConfig(flags.config)
-    const { scripts = [] } = config || {}
+    const { scripts = [], type = 'cjs' } = config || {}
 
     // run a script
     if (flags.run) {
       const module = flags.run
       const script = scripts.find((s, i) => (s.module === module) || (`${i + 1}` === module))
       if (!script) return this.error(`module ${module} not found`)
-      return this.runScript(script)
+      return this.runScript({ type, ...script })
     }
 
     // print all scripts
@@ -99,7 +93,9 @@ class ScriptRunner extends Command {
     }
 
     // run all scripts
-    this.runScripts(scripts)
+    for (const script of scripts) {
+      this.runScript({ type, ...script })
+    }
   }
 }
 
