@@ -44,15 +44,19 @@ class ScriptRunner extends Command {
 
     const configPath = await this.parseConfigPath(configPaths)
 
-    tsNode.register({ dir: configPath, skipProject: true, transpileOnly: true, compilerOptions: { allowJs: true } })
+    this.compileTsCode(configPath)
 
     const configModule = require(configPath)
     return configModule.default ?? configModule
   }
 
+  compileTsCode(dir: string) {
+    tsNode.register({ dir, skipProject: true, transpileOnly: true, compilerOptions: { allowJs: true } })
+  }
+
   runTs(script: Script) {
     const { module, args } = script
-    tsNode.register({ dir: require.resolve(module), skipProject: true, transpileOnly: true, compilerOptions: { allowJs: true } })
+    this.compileTsCode(require.resolve(module))
     return require(module).default(...args)
   }
 
