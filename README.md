@@ -53,12 +53,13 @@ ScriptRunner 支持直接解析和执行 cjs、esm 和 ts 的脚本代码，配�
 
 ```js
 module.exports = {
-  type: "cjs", // scripts 中没有写 type, 会默认用这个
   scripts: [
     {
-      module: "@prequest/response-types-generator",
-      type: "cjs",
+      module: "@prequest/response-types-generator", // 脚本入口文件
+      group: 1, // 分组
+      type: "cjs", // 模块类型
       args: [
+        // 脚本参数
         {
           data: [
             {
@@ -107,5 +108,6 @@ module.exports = {
 > - `scr -v` 版本查看
 > - `scr -h` 查看帮助
 > - `scr -l` 查看配置的脚本
-> - `scr -r 1` 或者 `scr -r index.js` 执行第一个脚本或者执行 module 为 index.js 的脚本
+> - `scr -r 1` 或者 `scr -r chokidar` 执行第一个脚本或者执行 module 为 index.js 的脚本
 > - `scr -c /User/xdoer/a.js` 指定配置文件
+> - `scr -g 1` 运行分组 1 的脚本

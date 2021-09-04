@@ -17,6 +17,8 @@ class ScriptRunner extends Command {
     run: flags.string({ char: 'r', description: 'run a script' }),
 
     config: flags.string({ char: 'c', description: 'specify the configuration file address' }),
+
+    group: flags.string({ char: 'g', description: 'run a group scripts' }),
   }
 
   async parseConfigPath(paths: string[]) {
@@ -81,25 +83,28 @@ class ScriptRunner extends Command {
     const { flags } = this.parse(ScriptRunner)
 
     const config: Config = await this.loadConfig(flags.config)
-    const { scripts = [], type = 'cjs' } = config || {}
-
-    // run a script
-    if (flags.run) {
-      const module = flags.run
-      const script = scripts.find((s, i) => (s.module === module) || (`${i + 1}` === module))
-      if (!script) return this.error(`module ${module} not found`)
-      return this.runScript({ type, ...script })
-    }
+    const { scripts = [] } = config || {}
 
     // print all scripts
     if (flags.list) {
       return scripts.forEach((script, idx) => this.log(`${idx + 1} ${script.module}`))
     }
 
-    // run all scripts
-    for (const script of scripts) {
-      this.runScript({ type, ...script })
+    // run a script
+    if (flags.run) {
+      const module = flags.run
+      const script = scripts.find((s, i) => (s.module === module) || (`${i + 1}` === module))
+      if (!script) return this.error(`module ${module} not found`)
+      return this.runScript(script)
     }
+
+    // run a group scripts
+    if (flags.group) {
+      return scripts.filter(script => script.group === flags.group).forEach(script => this.runScript(script))
+    }
+
+    // run all scripts
+    scripts.forEach(script => this.runScript(script))
   }
 }
 
