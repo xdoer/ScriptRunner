@@ -1,7 +1,7 @@
 {
   "name": "@xdoer/script-runner",
-  "description": "run script",
-  "version": "1.0.0",
+  "description": "Manage、parse and run scripts",
+  "version": "1.0.1",
   "author": "Thomas Trainset @xdoer",
   "bin": {
     "scr": "./bin/run"
@@ -34,7 +34,8 @@
   ],
   "homepage": "https://github.com/xdoer/script-runner",
   "keywords": [
-    "oclif"
+    "oclif",
+    "scripts"
   ],
   "license": "MIT",
   "main": "lib/index.js",
