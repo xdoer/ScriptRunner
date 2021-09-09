@@ -3,32 +3,18 @@ import { resolve, isAbsolute } from 'path'
 import { promises, constants } from 'fs'
 import * as tsNode from 'ts-node'
 import { Config, Script } from './types'
+import { promiseAny } from './util'
 
 class ScriptRunner extends Command {
-  static description = 'run script'
+  static description = 'manage、parse and run scripts'
 
   static flags = {
     version: flags.version({ char: 'v' }),
-
     help: flags.help({ char: 'h' }),
-
     list: flags.boolean({ char: 'l', description: 'print scripts list' }),
-
     run: flags.string({ char: 'r', description: 'run a script' }),
-
     config: flags.string({ char: 'c', description: 'specify the configuration file address' }),
-
     group: flags.string({ char: 'g', description: 'run a group scripts' }),
-  }
-
-  async parseConfigPath(paths: string[]) {
-    for (const path of paths) {
-      try {
-        await promises.access(path, constants.F_OK)
-        return path
-      } catch { }
-    }
-    throw new Error('script-runner config file is not found')
   }
 
   async loadConfig(filePath?: string): Promise<Config> {
@@ -37,19 +23,17 @@ class ScriptRunner extends Command {
     if (!filePath) {
       configPaths = ['js', 'ts'].map(ext => resolve(process.cwd(), `scr.config.${ext}`))
     } else {
-      if (isAbsolute(filePath)) {
-        configPaths.push(filePath)
-      } else {
-        configPaths.push(resolve(process.cwd(), filePath))
-      }
+      configPaths.push(isAbsolute(filePath) ? filePath : resolve(process.cwd(), filePath))
     }
 
-    const configPath = await this.parseConfigPath(configPaths)
-
-    this.compileTsCode(configPath)
-
-    const configModule = require(configPath)
-    return configModule.default ?? configModule
+    try {
+      const configPath = await promiseAny<string>(configPaths.map(path => promises.access(path, constants.F_OK)))
+      this.compileTsCode(configPath)
+      const configModule = require(configPath)
+      return configModule.default ?? configModule
+    } catch (e) {
+      throw new Error('ScriptRunner Config File Is Not Found')
+    }
   }
 
   compileTsCode(dir: string) {
