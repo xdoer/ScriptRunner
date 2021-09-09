@@ -1,3 +1,5 @@
+import { access, constants } from 'fs'
+
 export function promiseAny<T>(promises: Promise<any>[]): Promise<T> {
   const rejectList: any = []
   let promisesLength = promises.length
@@ -11,6 +13,15 @@ export function promiseAny<T>(promises: Promise<any>[]): Promise<T> {
         promisesLength--
         if (!promisesLength) reject(rejectList)
       })
+    })
+  })
+}
+
+export async function promiseAccess(path: string) {
+  return new Promise((resolve, reject) => {
+    access(path, constants.F_OK | constants.W_OK, (err) => {
+      if (err) reject(`${path} ${err.code === 'ENOENT' ? 'does not exist' : 'is read-only'}`)
+      resolve(path)
     })
   })
 }

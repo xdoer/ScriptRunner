@@ -1,9 +1,8 @@
 import { Command, flags } from '@oclif/command'
 import { resolve, isAbsolute } from 'path'
-import { promises, constants } from 'fs'
 import * as tsNode from 'ts-node'
 import { Config, Script } from './types'
-import { promiseAny } from './util'
+import { promiseAny, promiseAccess } from './util'
 
 class ScriptRunner extends Command {
   static description = 'manage、parse and run scripts'
@@ -27,12 +26,12 @@ class ScriptRunner extends Command {
     }
 
     try {
-      const configPath = await promiseAny<string>(configPaths.map(path => promises.access(path, constants.F_OK)))
+      const configPath = await promiseAny<string>(configPaths.map(path => promiseAccess(path)))
       this.compileTsCode(configPath)
       const configModule = require(configPath)
       return configModule.default ?? configModule
     } catch (e) {
-      throw new Error('ScriptRunner Config File Is Not Found')
+      throw new Error('script-runner config file is not found')
     }
   }
 
@@ -65,7 +64,6 @@ class ScriptRunner extends Command {
 
   async run() {
     const { flags } = this.parse(ScriptRunner)
-
     const config: Config = await this.loadConfig(flags.config)
     const { scripts = [] } = config || {}
 
