@@ -57,7 +57,7 @@ module.exports = {
     {
       module: "@prequest/response-types-generator", // 脚本入口文件
       group: 1, // 分组
-      type: "cjs", // 模块类型
+      // 模块类型
       args: [
         // 脚本参数
         {
@@ -71,7 +71,6 @@ module.exports = {
     },
     {
       module: "@prequest/response-types-generator/es6/index.js",
-      type: "esm",
       args: [
         {
           data: [
@@ -81,10 +80,13 @@ module.exports = {
           ],
         },
       ],
+      // 传入 process 函数，脚本将在子进程中运行
+      process(childProcess) {
+        console.log(childProcess);
+      },
     },
     {
       module: "@prequest/response-types-generator/src/index.ts",
-      type: "ts",
       args: [
         {
           data: [
