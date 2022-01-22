@@ -1,5 +1,6 @@
 import { Command, flags } from '@oclif/command'
 import { resolve, isAbsolute } from 'path'
+import * as cp from 'child_process'
 import * as tsNode from 'ts-node'
 import { Config, Script } from './types'
 import { promiseAny, promiseAccess } from './util'
@@ -39,27 +40,19 @@ class ScriptRunner extends Command {
     tsNode.register({ dir, skipProject: true, transpileOnly: true, compilerOptions: { allowJs: true } })
   }
 
-  runTs(script: Script) {
-    const { module, args } = script
-    this.compileTsCode(require.resolve(module))
-    return require(module).default(...args)
-  }
-
-  runCjs(script: Script) {
-    const { module, args } = script
-    const loaded = require(module)
-    return typeof loaded.default === 'function' ? loaded.default(...args) : loaded(...args)
-  }
-
   runScript(script: Script) {
-    switch (script.type) {
-      case 'ts':
-      case 'esm':
-        this.runTs(script)
-        break
-      default:
-        this.runCjs(script)
+    const { module, args, process } = script
+    const loaded = require(module)
+    const isExportDefaultFn = typeof loaded.default === 'function'
+
+    if (process) {
+      const sub = cp.spawn('ts-node', ['-e', `require("${module}")${isExportDefaultFn ? '.default' : ''}(...${JSON.stringify(args)})`, '--skip-project'], {
+        stdio: ['inherit', 'inherit', 'inherit']
+      });
+      return process(sub);
     }
+
+    return isExportDefaultFn ? loaded.default(...args) : loaded(...args)
   }
 
   async run() {
