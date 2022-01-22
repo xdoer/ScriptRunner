@@ -1,7 +1,7 @@
 {
   "name": "@xdoer/script-runner",
   "description": "Manage、parse and run scripts",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "Thomas Trainset @xdoer",
   "bin": {
     "scr": "./bin/run"
