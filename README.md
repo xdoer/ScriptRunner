@@ -80,10 +80,8 @@ module.exports = {
           ],
         },
       ],
-      // 传入 process 函数，模块将在子进程中运行
-      process(childProcess) {
-        console.log(childProcess);
-      },
+      // 传入 subProcess 配置项，模块将在子进程中运行
+      subProcess: true,
     },
     {
       module: "@prequest/response-types-generator/src/index.ts",

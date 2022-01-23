@@ -1,9 +1,9 @@
 import { Command, flags } from '@oclif/command'
 import { resolve, isAbsolute } from 'path'
-import * as cp from 'child_process'
 import * as tsNode from 'ts-node'
-import { Config, Script } from './types'
+import { Config } from './types'
 import { promiseAny, promiseAccess } from './util'
+import runScript from './runScript'
 
 class ScriptRunner extends Command {
   static description = 'manage、parse and run scripts'
@@ -32,27 +32,12 @@ class ScriptRunner extends Command {
       const configModule = require(configPath)
       return configModule.default ?? configModule
     } catch (e) {
-      throw new Error('script-runner config file is not found')
+      throw new Error('load script-runner config fail')
     }
   }
 
   compileTsCode(dir: string) {
     tsNode.register({ dir, skipProject: true, transpileOnly: true, compilerOptions: { allowJs: true } })
-  }
-
-  runScript(script: Script) {
-    const { module, args, process } = script
-    const loaded = require(module)
-    const isExportDefaultFn = typeof loaded.default === 'function'
-
-    if (process) {
-      const sub = cp.spawn('ts-node', ['-e', `require("${module}")${isExportDefaultFn ? '.default' : ''}(...${JSON.stringify(args)})`, '--skip-project'], {
-        stdio: ['inherit', 'inherit', 'inherit']
-      });
-      return process(sub);
-    }
-
-    return isExportDefaultFn ? loaded.default(...args) : loaded(...args)
   }
 
   async run() {
@@ -70,16 +55,16 @@ class ScriptRunner extends Command {
       const module = flags.run
       const script = scripts.find((s, i) => (s.module === module) || (`${i + 1}` === module))
       if (!script) return this.error(`module ${module} not found`)
-      return this.runScript(script)
+      return runScript(script)
     }
 
     // run a group scripts
     if (flags.group) {
-      return scripts.filter(script => script.group === flags.group).forEach(script => this.runScript(script))
+      return scripts.filter(script => script.group === flags.group).forEach(script => runScript(script))
     }
 
     // run all scripts
-    scripts.forEach(script => this.runScript(script))
+    scripts.forEach(script => runScript(script))
   }
 }
 

@@ -1,10 +1,8 @@
-import { ChildProcess } from "child_process";
-
 export interface Script {
   module: string
   group?: number,
   args: any[]
-  process?(sub: ChildProcess): void
+  subProcess?: boolean
 }
 
 export interface Config {
