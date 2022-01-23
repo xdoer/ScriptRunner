@@ -80,7 +80,7 @@ module.exports = {
           ],
         },
       ],
-      // 传入 process 函数，脚本将在子进程中运行
+      // 传入 process 函数，模块将在子进程中运行
       process(childProcess) {
         console.log(childProcess);
       },
@@ -104,6 +104,34 @@ module.exports = {
 ## 编写脚本规范
 
 编写的脚本需要默认导出一个函数，ScriptRunner 会根据配置文件中配置的模块，查找脚本，并将配置的 `args` 参数传递到脚本中执行。这样的好处在于，我们的脚本可以根据传参，执行不同的逻辑，也为脚本发布 NPM 包，供他人使用提供了便利
+
+脚本 demo:
+
+```ts
+interface Config {}
+
+export default function main(config: Config) => {
+
+}
+
+export type Args = Parameters<typeof main>;
+```
+
+配置:
+
+```ts
+import { Config } from "@xdoer/script-runner/lib/types";
+import { Args } from "your package";
+
+export default <Config>{
+  scripts: [
+    {
+      module: "your package",
+      args: <Args>[{}],
+    },
+  ],
+};
+```
 
 ## CLI 命令
 
